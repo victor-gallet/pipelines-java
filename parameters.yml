@@ -1,0 +1,15 @@
+parameters:
+- name: 'containerName'
+  default: 'not working'
+  type: string
+
+steps:
+- task: AzureCLI@2
+  displayName: Azure CLI
+  inputs:
+    azureSubscription: thierry-sandox
+    addSpnToEnvironment: true
+    scriptType: bash
+    scriptLocation: inlineScript
+    inlineScript: |
+      az storage container exists --account-name thierrysandboxdiag --name ${{ parameters.containerName }}

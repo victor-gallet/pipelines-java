@@ -1,2 +1,4 @@
 variables:
-  buildStageName: 'Get Builds by Commit'
+  stageName: 'Get Builds by Commit <= from var stageName'
+  jobName: 'Get Builds by Commit <= from var jobName'
+  scriptName: 'Get Builds by Commit from var scriptName'

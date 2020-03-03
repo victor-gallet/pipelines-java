@@ -15,15 +15,17 @@ variables:
 stages :
 
 - stage: Status
-  displayName: ${{buildStageName}}
+  displayName: ${{ variables.stageName }}
   jobs:
     - job:   
-      displayName: Get Builds by Commit
+      displayName: ${{ variables.jobName }}
       variables:
         AUTH : "Authorization: Bearer $(System.AccessToken)"
       pool:
         vmImage: 'ubuntu-latest'
       steps:
+        - script: echo from variable template ${{ variables.scriptName }}
+        - script: java -version && which java
         - script: curl -X GET -H '$(AUTH)' "$( echo "https://dev.azure.com/thierrychantier/$(System.TeamProject)/_apis/build/builds" | sed 's/ /%20/g' )" >> output.txt
         - script: cat output.txt
         - script: cat output.txt | jq -c '. .value[] | select(.sourceVersion | contains("$(Build.SourceVersion)")) | .id'
@@ -33,89 +35,12 @@ stages :
 
   jobs:  
     - job:
-      displayName: Job Test
-      pool:
-        vmImage: 'ubuntu-latest'
-      steps:
-      - task: Maven@3
-        displayName: UnitTest
-        condition: and(not(contains(variables['Build.SourceVersionMessage'], '@noci')),not(contains(variables['Build.SourceVersionMessage'], '@notests')))
-        inputs:
-          mavenPomFile: 'pom.xml'
-          mavenOptions: '-Xmx3072m'
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.8'
-          jdkArchitectureOption: 'x64'
-          publishJUnitResults: false
-          testResultsFiles: '**/surefire-reports/TEST-*.xml'
-          goals: 'test -P UnitTest'
-      - task: Maven@3
-        displayName: DBTest
-        condition: or(eq(variables['runDbTest'], 'true'), and(not(contains(variables['Build.SourceVersionMessage'], '@noci')), contains(variables['Build.SourceVersionMessage'], '@dbtests')))
-        inputs:
-          mavenPomFile: 'pom.xml'
-          mavenOptions: '-Xmx3072m'
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.8'
-          jdkArchitectureOption: 'x64'
-          publishJUnitResults: false
-          testResultsFiles: '**/surefire-reports/TEST-*.xml'
-          goals: 'test -P DBTest'
-      - task: PublishTestResults@2
-        displayName: Merge Test Results
-        inputs:
-          testResultsFormat: 'JUnit'
-          testResultsFiles: '**/TEST-*.xml' 
-          mergeTestResults: true
-      - task: Maven@3
-        displayName: Package
-        inputs:
-          mavenPomFile: 'pom.xml'
-          mavenOptions: '-Xmx3072m'
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.8'
-          jdkArchitectureOption: 'x64'
-          goals: 'package -DskipTests=true'
-      - task: CopyFiles@2
-        inputs:
-          contents: 'target/**.war'
-          targetFolder: $(Build.ArtifactStagingDirectory)
-      # - task: PublishBuildArtifacts@1 ## Deprecated
-      #   inputs:
-      #     pathToPublish: $(Build.ArtifactStagingDirectory)
-      #     artifactName: MonWarBuild
-      - task: PublishPipelineArtifact@1 ## Recommended
-        inputs:
-          targetPath: $(Build.ArtifactStagingDirectory)
-          artifactName: MonWarPipeline
-
-    - job:
       displayName: Job Test 2
       pool:
         vmImage: 'ubuntu-16.04'
       steps:
+      - template: parameters.yml
+        parameters:
+          containerName: 'test-az-cli'
       - bash: echo "Hello world " + $(Build.BuildId)
 
-- stage: Deploy
-  displayName: Deploy stage
-  dependsOn: Build
-  jobs:
-  - deployment: Deploy
-    displayName: Deploy job
-    pool:
-      vmImage: 'ubuntu-latest'
-    environment: 'Test'
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-            - task: DownloadPipelineArtifact@2 ## Recommended
-              inputs:
-                artifact: MonWarPipeline
-                buildId: 106
-            - task: DownloadPipelineArtifact@2 ## Recommended
-              inputs:
-                artifact: MonWarPipeline
-            # - task: DownloadBuildArtifacts@0 ## Deprecated
-            #   inputs:
-            #     artifactName: MonWarBuild

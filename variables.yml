@@ -1,0 +1,2 @@
+variables:
+  buildStageName: 'Get Builds by Commit'

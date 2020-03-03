@@ -10,11 +10,12 @@ variables:
     value: '$(Build.BuildId)'
   - name: System.Debug
     value: true
+  - template: variables.yml
 
 stages :
 
 - stage: Status
-  displayName: Get Builds by Commit
+  displayName: ${{buildStageName}}
   jobs:
     - job:   
       displayName: Get Builds by Commit

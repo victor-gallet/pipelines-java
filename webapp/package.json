@@ -2,16 +2,20 @@
   "name": "azure-storage-blob-samples-ts",
   "private": true,
   "version": "0.0.1",
+  "main": "index.js",
   "description": "Azure Storage Blob client library samples for TypeScript",
   "engine": {
     "node": ">=8.0.0"
   },
   "scripts": {
     "build": "tsc",
-    "prebuild": "rimraf dist/"
+    "prebuild": "rimraf dist/",
+    "dev": "tsc --watch & nodemon dist"
   },
   "sideEffects": false,
   "dependencies": {
+    "express": "4.15.3",
+    "nodemon": "1.11.0",
     "@azure/abort-controller": "latest",
     "@azure/identity": "latest",
     "@azure/storage-blob": "latest",

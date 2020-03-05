@@ -167,7 +167,7 @@ stages :
                 appName: test-webapp-semarchy
                 runtimeStack: 'NODE|10.10'
                 package: $(Pipeline.Workspace)/webapp/$(Build.BuildId).zip
-                customWebConfig: '-Handler iisnode -NodeStartFile index.js -appType node'
+              # customWebConfig: '-Handler iisnode -NodeStartFile index.js -appType node'
             # - task: DownloadPipelineArtifact@2 ## Recommended
             #   inputs:
             #     artifact: MonWarPipeline

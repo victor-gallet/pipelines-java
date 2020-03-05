@@ -38,7 +38,7 @@ stages :
         MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
       timeoutInMinutes: 0 # 0 veut dire max value, par défaut c'est 60 minutes pour windows agent sur un git privé
       pool:
-        vmImage: 'ubuntu-latest'
+        name: 'BuildAgentPool'
       steps:
       - task: Cache@2
         inputs:
@@ -120,7 +120,7 @@ stages :
     - job: Test
       displayName: Job Test
       pool:
-        vmImage: 'ubuntu-latest'
+        name: 'BuildAgentPool'
       steps:
       - task: Maven@3
         displayName: Package
@@ -152,7 +152,7 @@ stages :
   - deployment: Deploy
     displayName: Deploy job
     pool:
-      vmImage: 'ubuntu-latest'
+      name: 'BuildAgentPool'
     environment: 'no_approbation'
     strategy:
       runOnce:

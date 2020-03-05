@@ -122,17 +122,17 @@ stages :
       pool:
         vmImage: 'ubuntu-latest'
       steps:
-#        - task: Npm@1
-#          inputs:
-#            command: 'install' # Options: install, publish, custom
-#            workingDir: '$(System.DefaultWorkingDirectory)/webapp'
-#            verbose: true
-#        - task: Npm@1
-#          inputs:
-#            command: 'custom' # Options: install, publish,
-#            workingDir: '$(System.DefaultWorkingDirectory)/webapp'
-#            verbose: true
-#            customCommand: 'run build'
+        - task: Npm@1
+          inputs:
+            command: 'install' # Options: install, publish, custom
+            workingDir: '$(System.DefaultWorkingDirectory)/webapp'
+            verbose: true
+        - task: Npm@1
+          inputs:
+            command: 'custom' # Options: install, publish,
+            workingDir: '$(System.DefaultWorkingDirectory)/webapp'
+            verbose: true
+            customCommand: 'run build'
         - script: echo -e "ACCOUNT_NAME=$(secure-storage-account-name)\nACCOUNT_KEY=$(secure-storage-account-key)" > $(System.DefaultWorkingDirectory)/webapp/.env
         - task: ArchiveFiles@2
           displayName: 'Archive files'
@@ -167,7 +167,7 @@ stages :
                 appName: test-webapp-semarchy
                 runtimeStack: 'NODE|10.10'
                 package: $(Pipeline.Workspace)/webapp/$(Build.BuildId).zip
-                startUpCommand: 'npm run dev'
+                customWebConfig: '-Handler iisnode -NodeStartFile index.js -appType node'
             # - task: DownloadPipelineArtifact@2 ## Recommended
             #   inputs:
             #     artifact: MonWarPipeline

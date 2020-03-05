@@ -54,7 +54,8 @@ stages :
         inputs:
           mavenPomFile: 'pom.xml'
           mavenOptions: $(MAVEN_OPTS)
-          javaHomeOption: 'JDKVersion'
+          javaHomeOption: '/usr/lib/jvm/java-8-openjdk-amd64'
+          jdkDirectory: '/usr/lib/jvm/java-8-openjdk-amd64'
           jdkVersionOption: '1.8'
           jdkArchitectureOption: 'x64'
           publishJUnitResults: false
@@ -66,7 +67,8 @@ stages :
         inputs:
           mavenPomFile: 'pom.xml'
           mavenOptions: $(MAVEN_OPTS)
-          javaHomeOption: 'JDKVersion'
+          javaHomeOption: '/usr/lib/jvm/java-8-openjdk-amd64'
+          jdkDirectory: '/usr/lib/jvm/java-8-openjdk-amd64'
           jdkVersionOption: '1.8'
           jdkArchitectureOption: 'x64'
           publishJUnitResults: false
@@ -127,7 +129,8 @@ stages :
         inputs:
           mavenPomFile: 'pom.xml'
           mavenOptions: '-Xmx3072m'
-          javaHomeOption: 'JDKVersion'
+          javaHomeOption: '/usr/lib/jvm/java-8-openjdk-amd64'
+          jdkDirectory: '/usr/lib/jvm/java-8-openjdk-amd64'
           jdkVersionOption: '1.8'
           jdkArchitectureOption: 'x64'
           goals: 'package -DskipTests=true'

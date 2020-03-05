@@ -167,7 +167,7 @@ stages :
                 appName: test-webapp-semarchy
                 runtimeStack: 'NODE|10.10'
                 package: $(Pipeline.Workspace)/webapp/$(Build.BuildId).zip
-                startUpCommand: 'node iterators-blob.js'          
+#                startUpCommand: 'node iterators-blob.js'
             # - task: DownloadPipelineArtifact@2 ## Recommended
             #   inputs:
             #     artifact: MonWarPipeline

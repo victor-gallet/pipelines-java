@@ -122,27 +122,29 @@ stages :
       pool:
         vmImage: 'ubuntu-latest'
       steps:
-      - task: Maven@3
-        displayName: Package
-        inputs:
-          mavenPomFile: 'pom.xml'
-          mavenOptions: '-Xmx3072m'
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.8'
-          jdkArchitectureOption: 'x64'
-          goals: 'package -DskipTests=true'
-      - task: CopyFiles@2
-        inputs:
-          contents: 'target/**.war'
-          targetFolder: $(Build.ArtifactStagingDirectory)
-      # - task: PublishBuildArtifacts@1 ## Deprecated
-      #   inputs:
-      #     pathToPublish: $(Build.ArtifactStagingDirectory)
-      #     artifactName: MonWarBuild
-      - task: PublishPipelineArtifact@1 ## Recommended
-        inputs:
-          targetPath: $(Build.ArtifactStagingDirectory)
-          artifactName: MonWarPipeline            
+        - task: Npm@1
+          inputs:
+            command: 'install' # Options: install, publish, custom
+            workingDir: '$(System.DefaultWorkingDirectory)/webapp'
+            verbose: true
+        - task: Npm@1
+          inputs:
+            command: 'custom' # Options: install, publish, 
+            workingDir: '$(System.DefaultWorkingDirectory)/webapp'
+            verbose: true
+            customCommand: 'run build'
+        - script: echo -e "ACCOUNT_NAME=$(secure-storage-account-name)\nACCOUNT_KEY=$(secure-storage-account-key)" > $(System.DefaultWorkingDirectory)/webapp/dist/.env
+        - task: ArchiveFiles@2
+          displayName: 'Archive files'
+          inputs:
+            rootFolderOrFile: '$(System.DefaultWorkingDirectory)/webapp/dist'
+            includeRootFolder: false
+            archiveType: zip
+            archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+            replaceExistingArchive: true
+
+        - publish: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+          artifact: webapp
 
 - stage: Deploy
   displayName: Deploy stage
@@ -158,14 +160,21 @@ stages :
       runOnce:
         deploy:
           steps:
-            
-            - task: DownloadPipelineArtifact@2 ## Recommended
+            - task: AzureWebApp@1
               inputs:
-                artifact: MonWarPipeline
-                buildId: 106
-            - task: DownloadPipelineArtifact@2 ## Recommended
-              inputs:
-                artifact: MonWarPipeline
+                azureSubscription: thierry-sandox
+                appType: webAppLinux
+                appName: static-website
+                runtimeStack: 'NODE|10.10'
+                package: $(Pipeline.Workspace)/webapp/$(Build.BuildId).zip
+                startUpCommand: 'node dist/iterators-blob.js'          
+            # - task: DownloadPipelineArtifact@2 ## Recommended
+            #   inputs:
+            #     artifact: MonWarPipeline
+            #     buildId: 106
+            # - task: DownloadPipelineArtifact@2 ## Recommended
+            #   inputs:
+            #     artifact: MonWarPipeline
             # - task: DownloadBuildArtifacts@0 ## Deprecated
             #   inputs:
             #     artifactName: MonWarBuild

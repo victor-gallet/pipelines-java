@@ -122,22 +122,22 @@ stages :
       pool:
         vmImage: 'ubuntu-latest'
       steps:
-        - task: Npm@1
-          inputs:
-            command: 'install' # Options: install, publish, custom
-            workingDir: '$(System.DefaultWorkingDirectory)/webapp'
-            verbose: true
-        - task: Npm@1
-          inputs:
-            command: 'custom' # Options: install, publish, 
-            workingDir: '$(System.DefaultWorkingDirectory)/webapp'
-            verbose: true
-            customCommand: 'run build'
-        - script: echo -e "ACCOUNT_NAME=$(secure-storage-account-name)\nACCOUNT_KEY=$(secure-storage-account-key)" > $(System.DefaultWorkingDirectory)/webapp/dist/.env
+#        - task: Npm@1
+#          inputs:
+#            command: 'install' # Options: install, publish, custom
+#            workingDir: '$(System.DefaultWorkingDirectory)/webapp'
+#            verbose: true
+#        - task: Npm@1
+#          inputs:
+#            command: 'custom' # Options: install, publish,
+#            workingDir: '$(System.DefaultWorkingDirectory)/webapp'
+#            verbose: true
+#            customCommand: 'run build'
+        - script: echo -e "ACCOUNT_NAME=$(secure-storage-account-name)\nACCOUNT_KEY=$(secure-storage-account-key)" > $(System.DefaultWorkingDirectory)/webapp/.env
         - task: ArchiveFiles@2
           displayName: 'Archive files'
           inputs:
-            rootFolderOrFile: '$(System.DefaultWorkingDirectory)/webapp/dist'
+            rootFolderOrFile: '$(System.DefaultWorkingDirectory)/webapp'
             includeRootFolder: false
             archiveType: zip
             archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
@@ -167,7 +167,7 @@ stages :
                 appName: test-webapp-semarchy
                 runtimeStack: 'NODE|10.10'
                 package: $(Pipeline.Workspace)/webapp/$(Build.BuildId).zip
-                startUpCommand: ''
+                startUpCommand: 'npm run dev'
             # - task: DownloadPipelineArtifact@2 ## Recommended
             #   inputs:
             #     artifact: MonWarPipeline

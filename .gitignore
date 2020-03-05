@@ -34,4 +34,8 @@ target/
 # webapp
 webapp/dist
 webapp/node_modules
+webapp/.env
+webapp/.deployment
+webapp/.vscode/settings.json
+
 

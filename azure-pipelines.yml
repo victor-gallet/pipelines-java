@@ -126,7 +126,10 @@ stages :
         - task: UsePythonVersion@0
           inputs:
             versionSpec: '$(python.version)'
-        - script: |
+        - task: Bash@3
+          failOnStderr: true
+          targetType: inline
+          script: |
             pip install -r $(System.DefaultWorkingDirectory)/python/requirements.txt
             python $(System.DefaultWorkingDirectory)/python/test_cowsay.py
             python -m pytest $(System.DefaultWorkingDirectory)/python/test_version_split.py

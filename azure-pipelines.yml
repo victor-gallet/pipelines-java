@@ -127,13 +127,13 @@ stages :
           inputs:
             versionSpec: '$(python.version)'
         - task: Bash@3
-          failOnStderr: true
-          targetType: inline
-          script: |
-            pip install -r $(System.DefaultWorkingDirectory)/python/requirements.txt
-            python $(System.DefaultWorkingDirectory)/python/test_cowsay.py
-            python -m pytest $(System.DefaultWorkingDirectory)/python/test_version_split.py
-          displayName: 'Test with pytest'
+          inputs:
+            failOnStderr: true
+            targetType: inline
+            script: |
+              pip install -r $(System.DefaultWorkingDirectory)/python/requirements.txt
+              python $(System.DefaultWorkingDirectory)/python/test_cowsay.py
+              python -m pytest $(System.DefaultWorkingDirectory)/python/test_version_split.py
 - stage: Package
   displayName: Package stage
   

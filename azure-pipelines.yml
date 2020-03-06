@@ -113,6 +113,23 @@ stages :
       #     #skipCACheck: true # Optional
       #     #sasTokenTimeOutInMinutes: # Optional
 
+- stage: Python
+  displayName: Python stage
+  jobs:
+    - job: Test
+      displayName: Job Test
+      variables:
+        python.version: '3.6'
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        - task: UsePythonVersion@0
+          inputs:
+            versionSpec: '$(python.version)'
+        - script: |
+            pip install pytest
+            pytest test_version_split.py
+          displayName: 'Test with pytest'
 - stage: Package
   displayName: Package stage
   

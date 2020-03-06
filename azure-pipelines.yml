@@ -13,136 +13,32 @@ variables:
 
 stages :
 
-# - stage: Status
-#   displayName: Get Builds by Commit
-#   jobs:
-#     - job:   
-#       displayName: Get Builds by Commit
-#       variables:
-#         AUTH : "Authorization: Bearer $(System.AccessToken)"
-#       pool:
-#         vmImage: 'ubuntu-latest'
-#       steps:
-#         - script: curl -X GET -H '$(AUTH)' "$( echo "https://dev.azure.com/thierrychantier/$(System.TeamProject)/_apis/build/builds" | sed 's/ /%20/g' )" >> output.txt
-#         - script: cat output.txt
-#         - script: cat output.txt | jq -c '. .value[] | select(.sourceVersion | contains("$(Build.SourceVersion)")) | .id'
-
-- stage: Build
-  displayName: Build stage
+- stage: Package
+  displayName: Package web app
 
   jobs:
-    - job: Test
-      displayName: Job Test
-      variables:
-        MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
-        MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
-      timeoutInMinutes: 0 # 0 veut dire max value, par défaut c'est 60 minutes pour windows agent sur un git privé
+    - job: Package
+      displayName: build and package backend
       pool:
         vmImage: 'ubuntu-latest'
       steps:
-      - task: Cache@2
-        inputs:
-          key: 'maven | "$(Agent.OS)" | **/pom.xml'
-          restoreKeys: |
-             maven | "$(Agent.OS)"
-             maven
-          path: $(MAVEN_CACHE_FOLDER)
-        displayName: Cache Maven local repo
-      - task: Maven@3
-        displayName: UnitTest
-        condition: and(not(contains(variables['Build.SourceVersionMessage'], '@noci')),not(contains(variables['Build.SourceVersionMessage'], '@notests')))
-        inputs:
-          mavenPomFile: 'pom.xml'
-          mavenOptions: $(MAVEN_OPTS)
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.8'
-          jdkArchitectureOption: 'x64'
-          publishJUnitResults: false
-          testResultsFiles: '**/surefire-reports/TEST-*.xml'
-          goals: 'test -P UnitTest'
-      - task: Maven@3
-        displayName: DBTest
-        condition: or(eq(variables['runDbTest'], 'true'), and(not(contains(variables['Build.SourceVersionMessage'], '@noci')), contains(variables['Build.SourceVersionMessage'], '@dbtests')))
-        inputs:
-          mavenPomFile: 'pom.xml'
-          mavenOptions: $(MAVEN_OPTS)
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.8'
-          jdkArchitectureOption: 'x64'
-          publishJUnitResults: false
-          testResultsFiles: '**/surefire-reports/TEST-*.xml'
-          goals: 'test -P DBTest'
+        - task: Npm@1
+          inputs:
+            command: 'install' # Options: install, publish, custom
+            workingDir: '$(System.DefaultWorkingDirectory)/fullwebapp/api'
+            verbose: true
+        - script: echo -e "ACCOUNT_NAME=$(secure-storage-account-name)\nACCOUNT_KEY=$(secure-storage-account-key)\nPORT=9000" > $(System.DefaultWorkingDirectory)/fullwebapp/.env
+        - task: ArchiveFiles@2
+          displayName: 'Archive files'
+          inputs:
+            rootFolderOrFile: '$(System.DefaultWorkingDirectory)/fullwebapp/api'
+            includeRootFolder: false
+            archiveType: zip
+            archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).backend.zip
+            replaceExistingArchive: true
 
-      - task: AzureCLI@2
-        displayName: Azure CLI
-        inputs:
-          azureSubscription: thierry-sandox
-          addSpnToEnvironment: true
-          scriptType: bash
-          scriptLocation: inlineScript
-          inlineScript: |
-            az storage blob upload-batch -d test-az-cli -s $(System.DefaultWorkingDirectory)/target/surefire-reports/ --pattern TEST*.xml --account-name $(secure-storage-account-name)  --account-key $(secure-storage-account-key)
-      
-      
-      - task: PublishTestResults@2
-        displayName: Merge Test Results
-        inputs:
-          testResultsFormat: 'JUnit'
-          testResultsFiles: '**/TEST-*.xml' 
-          mergeTestResults: true
-      ## Tache non compatible avec un agent linux
-      # - task: AzureFileCopy@4
-      #   inputs:
-      #     sourcePath: '**/surefire-reports/TEST-*.xml'
-      #     azureSubscription: 'thierry-sandox'
-      #     destination: AzureBlob
-      #     storage: 
-      #     containerName: # Required when destination == AzureBlob
-      #     #blobPrefix: # Optional
-      #     #resourceGroup: # Required when destination == AzureVMs
-      #     #resourceFilteringMethod: 'machineNames' # Optional. Options: machineNames, tags
-      #     #machineNames: # Optional
-      #     #vmsAdminUserName: # Required when destination == AzureVMs
-      #     #vmsAdminPassword: # Required when destination == AzureVMs
-      #     #targetPath: # Required when destination == AzureVMs
-      #     #additionalArgumentsForBlobCopy: # Optional
-      #     #additionalArgumentsForVMCopy: # Optional
-      #     #enableCopyPrerequisites: false # Optional
-      #     #copyFilesInParallel: true # Optional
-      #     #cleanTargetBeforeCopy: false # Optional
-      #     #skipCACheck: true # Optional
-      #     #sasTokenTimeOutInMinutes: # Optional
-
-- stage: Package
-  displayName: Package stage
-  
-  jobs:  
-    - job: Test
-      displayName: Job Test
-      pool:
-        vmImage: 'ubuntu-latest'
-      steps:
-      - task: Maven@3
-        displayName: Package
-        inputs:
-          mavenPomFile: 'pom.xml'
-          mavenOptions: '-Xmx3072m'
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.8'
-          jdkArchitectureOption: 'x64'
-          goals: 'package -DskipTests=true'
-      - task: CopyFiles@2
-        inputs:
-          contents: 'target/**.war'
-          targetFolder: $(Build.ArtifactStagingDirectory)
-      # - task: PublishBuildArtifacts@1 ## Deprecated
-      #   inputs:
-      #     pathToPublish: $(Build.ArtifactStagingDirectory)
-      #     artifactName: MonWarBuild
-      - task: PublishPipelineArtifact@1 ## Recommended
-        inputs:
-          targetPath: $(Build.ArtifactStagingDirectory)
-          artifactName: MonWarPipeline            
+        - publish: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).backend.zip
+          artifact: backend.webapp
 
 - stage: Deploy
   displayName: Deploy stage
@@ -150,7 +46,7 @@ stages :
   condition: succeeded('Package')
   jobs:
   - deployment: Deploy
-    displayName: Deploy job
+    displayName: Deploy backend
     pool:
       vmImage: 'ubuntu-latest'
     environment: 'no_approbation'
@@ -158,14 +54,11 @@ stages :
       runOnce:
         deploy:
           steps:
-            
-            - task: DownloadPipelineArtifact@2 ## Recommended
+            - task: AzureWebApp@1
               inputs:
-                artifact: MonWarPipeline
-                buildId: 106
-            - task: DownloadPipelineArtifact@2 ## Recommended
-              inputs:
-                artifact: MonWarPipeline
-            # - task: DownloadBuildArtifacts@0 ## Deprecated
-            #   inputs:
-            #     artifactName: MonWarBuild
+                azureSubscription: thierry-sandox
+                appType: webAppLinux
+                appName: test-webapp-semarchy
+                runtimeStack: 'NODE|10.10'
+                package: $(Pipeline.Workspace)/fullwebapp/$(Build.BuildId).backend.zip
+                startUpCommand: "npm start"

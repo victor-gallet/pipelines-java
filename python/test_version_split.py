@@ -1,7 +1,6 @@
 from version_split import extract_version
 import pytest
 
-
 def test_nominal():
     assert extract_version('5.2.2') == '5.2'
 

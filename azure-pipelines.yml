@@ -128,6 +128,7 @@ stages :
             versionSpec: '$(python.version)'
         - script: |
             pip install -r $(System.DefaultWorkingDirectory)/python/requirements.txt
+            python -m test_cowsay
             python -m pytest $(System.DefaultWorkingDirectory)/python/test_version_split.py
           displayName: 'Test with pytest'
 - stage: Package

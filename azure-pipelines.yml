@@ -127,8 +127,8 @@ stages :
           inputs:
             versionSpec: '$(python.version)'
         - script: |
-            pip install pytest
-            pytest  $(System.DefaultWorkingDirectory)/python/test_version_split.py
+            pip install -r $(System.DefaultWorkingDirectory)/python/requirements
+            python -m pytest $(System.DefaultWorkingDirectory)/python/test_version_split.py
           displayName: 'Test with pytest'
 - stage: Package
   displayName: Package stage

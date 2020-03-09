@@ -30,19 +30,30 @@ stages :
 - stage: Build
   displayName: Build stage
   variables:
-    noci: $(contains(variables['Build.SourceVersionMessage'], '@noci'))
+    noci: false
 
   jobs:
     - job: Test
       displayName: Job Test
       variables:
+        noci: false
         MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
         MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
       timeoutInMinutes: 0 # 0 veut dire max value, par défaut c'est 60 minutes pour windows agent sur un git privé
       pool:
         vmImage: 'ubuntu-latest'
       steps:
-      - script: echo $(noci)
+      - task: Bash@3
+        inputs:
+          failOnStderr: true
+          targetType: 'inline'
+          script: |
+            echo $GIT_COMMIT
+            if [[ $GIT_COMMIT == *"noci"* ]]; then
+              echo "It's there!"
+            fi
+        env:
+          GIT_COMMIT: $(Build.SourceVersionMessage)
       - task: Cache@2
         inputs:
           key: 'maven | "$(Agent.OS)" | **/pom.xml'

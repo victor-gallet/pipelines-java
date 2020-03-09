@@ -42,6 +42,7 @@ stages :
       pool:
         vmImage: 'ubuntu-latest'
       steps:
+      - script: echo $(noci)
       - task: Cache@2
         inputs:
           key: 'maven | "$(Agent.OS)" | **/pom.xml'
@@ -52,7 +53,7 @@ stages :
         displayName: Cache Maven local repo
       - task: Maven@3
         displayName: UnitTest
-        condition: and(not(contains(variables['Build.SourceVersionMessage'], '@noci')),not(contains(variables['Build.SourceVersionMessage'], '@notests')))
+        condition: and(not($(noci)),not(contains(variables['Build.SourceVersionMessage'], '@notests')))
         inputs:
           mavenPomFile: 'pom.xml'
           mavenOptions: $(MAVEN_OPTS)

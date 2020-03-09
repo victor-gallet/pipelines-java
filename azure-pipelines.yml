@@ -4,12 +4,14 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/java
 
 name: $(TeamProject)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)_$(Rev:.r)
+parameters:
+  debug: true
 variables:
   - group: external-variables
   - name: buildId
     value: '$(Build.BuildId)'
   - name: System.Debug
-    value: true
+    value: $(debug)
 
 stages :
 

@@ -33,63 +33,68 @@ stages :
   jobs:
     - job: Test
       displayName: Job Test
-      variables:
-        MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
-        MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+      # variables:
+#        MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+#        MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
       timeoutInMinutes: 0 # 0 veut dire max value, par défaut c'est 60 minutes pour windows agent sur un git privé
       pool:
         vmImage: 'ubuntu-latest'
       steps:
-      - task: Cache@2
-        inputs:
-          key: 'maven | "$(Agent.OS)" | **/pom.xml'
-          restoreKeys: |
-             maven | "$(Agent.OS)"
-             maven
-          path: $(MAVEN_CACHE_FOLDER)
-        displayName: Cache Maven local repo
-      - task: Maven@3
-        displayName: UnitTest
-        condition: and(not(contains(variables['Build.SourceVersionMessage'], '@noci')),not(contains(variables['Build.SourceVersionMessage'], '@notests')))
-        inputs:
-          mavenPomFile: 'pom.xml'
-          mavenOptions: $(MAVEN_OPTS)
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.8'
-          jdkArchitectureOption: 'x64'
-          publishJUnitResults: false
-          testResultsFiles: '**/surefire-reports/TEST-*.xml'
-          goals: 'test -P UnitTest'
-      - task: Maven@3
-        displayName: DBTest
-        condition: or(eq(variables['runDbTest'], 'true'), and(not(contains(variables['Build.SourceVersionMessage'], '@noci')), contains(variables['Build.SourceVersionMessage'], '@dbtests')))
-        inputs:
-          mavenPomFile: 'pom.xml'
-          mavenOptions: $(MAVEN_OPTS)
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.8'
-          jdkArchitectureOption: 'x64'
-          publishJUnitResults: false
-          testResultsFiles: '**/surefire-reports/TEST-*.xml'
-          goals: 'test -P DBTest'
-
-      - task: AzureCLI@2
-        displayName: Azure CLI
-        inputs:
-          azureSubscription: thierry-sandox
-          addSpnToEnvironment: true
-          scriptType: bash
-          scriptLocation: inlineScript
-          inlineScript: |
-            az storage blob upload-batch -d test-az-cli -s $(System.DefaultWorkingDirectory)/target/surefire-reports/ --pattern TEST*.xml --account-name $(secure-storage-account-name)  --account-key $(secure-storage-account-key)
-      
-      
-      - task: PublishTestResults@2
-        displayName: Merge Test Results
-        inputs:
-          testResultsFormat: 'JUnit'
-          testResultsFiles: '**/TEST-*.xml' 
-          mergeTestResults: true
+        - task: Docker@2
+          displayName: Build
+          inputs:
+            command: build
+            Dockerfile: $(System.DefaultWorkingDirectory)/docker/Dockerfile
+#      - task: Cache@2
+#        inputs:
+#          key: 'maven | "$(Agent.OS)" | **/pom.xml'
+#          restoreKeys: |
+#             maven | "$(Agent.OS)"
+#             maven
+#          path: $(MAVEN_CACHE_FOLDER)
+#        displayName: Cache Maven local repo
+#      - task: Maven@3
+#        displayName: UnitTest
+#        condition: and(not(contains(variables['Build.SourceVersionMessage'], '@noci')),not(contains(variables['Build.SourceVersionMessage'], '@notests')))
+#        inputs:
+#          mavenPomFile: 'pom.xml'
+#          mavenOptions: $(MAVEN_OPTS)
+#          javaHomeOption: 'JDKVersion'
+#          jdkVersionOption: '1.8'
+#          jdkArchitectureOption: 'x64'
+#          publishJUnitResults: false
+#          testResultsFiles: '**/surefire-reports/TEST-*.xml'
+#          goals: 'test -P UnitTest'
+#      - task: Maven@3
+#        displayName: DBTest
+#        condition: or(eq(variables['runDbTest'], 'true'), and(not(contains(variables['Build.SourceVersionMessage'], '@noci')), contains(variables['Build.SourceVersionMessage'], '@dbtests')))
+#        inputs:
+#          mavenPomFile: 'pom.xml'
+#          mavenOptions: $(MAVEN_OPTS)
+#          javaHomeOption: 'JDKVersion'
+#          jdkVersionOption: '1.8'
+#          jdkArchitectureOption: 'x64'
+#          publishJUnitResults: false
+#          testResultsFiles: '**/surefire-reports/TEST-*.xml'
+#          goals: 'test -P DBTest'
+#
+#      - task: AzureCLI@2
+#        displayName: Azure CLI
+#        inputs:
+#          azureSubscription: thierry-sandox
+#          addSpnToEnvironment: true
+#          scriptType: bash
+#          scriptLocation: inlineScript
+#          inlineScript: |
+#            az storage blob upload-batch -d test-az-cli -s $(System.DefaultWorkingDirectory)/target/surefire-reports/ --pattern TEST*.xml --account-name $(secure-storage-account-name)  --account-key $(secure-storage-account-key)
+#
+#
+#      - task: PublishTestResults@2
+#        displayName: Merge Test Results
+#        inputs:
+#          testResultsFormat: 'JUnit'
+#          testResultsFiles: '**/TEST-*.xml'
+#          mergeTestResults: true
       ## Tache non compatible avec un agent linux
       # - task: AzureFileCopy@4
       #   inputs:

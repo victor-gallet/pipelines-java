@@ -37,8 +37,8 @@ stages :
       displayName: Job Test
       variables:
         noci: false
-        MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
-        MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+        notest: false
+        alldbtests: false 
       timeoutInMinutes: 0 # 0 veut dire max value, par défaut c'est 60 minutes pour windows agent sur un git privé
       pool:
         vmImage: 'ubuntu-latest'
@@ -50,24 +50,22 @@ stages :
           script: |
             echo $GIT_COMMIT
             if [[ $GIT_COMMIT == *"noci"* ]]; then
-            echo '##vso[task.setvariable variable=noci]true'
+              echo '##vso[task.setvariable variable=noci]true'
+            fi
+            if [[ $GIT_COMMIT == *"notest"* ]]; then
+              echo '##vso[task.setvariable variable=notest]true'
+            fi
+            if [[ $GIT_COMMIT == *"alldbtests"* ]]; then
+              echo '##vso[task.setvariable variable=alldbtests]true'
             fi
         env:
           GIT_COMMIT: $(Build.SourceVersionMessage)
-      - task: Cache@2
-        inputs:
-          key: 'maven | "$(Agent.OS)" | **/pom.xml'
-          restoreKeys: |
-             maven | "$(Agent.OS)"
-             maven
-          path: $(MAVEN_CACHE_FOLDER)
-        displayName: Cache Maven local repo
       - task: Maven@3
         displayName: UnitTest
-        condition: and(not(variables['noci']),not(contains(variables['Build.SourceVersionMessage'], '@notests')))
+        condition: and(eq(variables['noci'], 'false'), eq(variables['notest'], 'false'))
         inputs:
           mavenPomFile: 'pom.xml'
-          mavenOptions: $(MAVEN_OPTS)
+          mavenOptions: '-Xmx3072m'
           javaHomeOption: 'JDKVersion'
           jdkVersionOption: '1.8'
           jdkArchitectureOption: 'x64'
@@ -76,10 +74,10 @@ stages :
           goals: 'test -P UnitTest'
       - task: Maven@3
         displayName: DBTest
-        condition: or(eq(variables['runDbTest'], 'true'), and(not(contains(variables['Build.SourceVersionMessage'], '@noci')), contains(variables['Build.SourceVersionMessage'], '@dbtests')))
+        condition: or(eq(variables['runDbTest'], 'true'), and(eq(variables['noci'], 'false'), eq(variables['alldbtests'], 'true')))
         inputs:
           mavenPomFile: 'pom.xml'
-          mavenOptions: $(MAVEN_OPTS)
+          mavenOptions: '-Xmx3072m'
           javaHomeOption: 'JDKVersion'
           jdkVersionOption: '1.8'
           jdkArchitectureOption: 'x64'

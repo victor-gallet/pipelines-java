@@ -45,22 +45,8 @@ stages :
       pool:
         vmImage: 'ubuntu-latest'
       steps:
-      - task: Bash@3
-        inputs:
-          failOnStderr: true
-          targetType: 'inline'
-          script: |
-            echo $GIT_COMMIT
-            if [[ $GIT_COMMIT == *"noci"* ]]; then
-              echo '##vso[task.setvariable variable=noci]true'
-            fi
-            if [[ $GIT_COMMIT == *"notest"* ]]; then
-              echo '##vso[task.setvariable variable=notest]true'
-            fi
-            if [[ $GIT_COMMIT == *"alldbtests"* ]]; then
-              echo '##vso[task.setvariable variable=alldbtests]true'
-            fi
-        env:
+      - template: extract_git_commit_flags.yml
+        parameters:
           GIT_COMMIT: $(Build.SourceVersionMessage)
       - task: Maven@3
         displayName: UnitTest

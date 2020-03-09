@@ -9,13 +9,15 @@ steps:
     failOnStderr: true
     targetType: 'inline'
     script: |
-    echo ${{ parameters.GIT_COMMIT }}
-    if [[ ${{ parameters.GIT_COMMIT }} == *"noci"* ]]; then
-        echo '##vso[task.setvariable variable=noci]true'
-    fi
-    if [[ ${{ parameters.GIT_COMMIT }} == *"notest"* ]]; then
+      echo $GIT_COMMIT
+      if [[ $GIT_COMMIT == *"noci"* ]]; then
+          echo '##vso[task.setvariable variable=noci]true'
+      fi
+      if [[ $GIT_COMMIT == *"notest"* ]]; then
         echo '##vso[task.setvariable variable=notest]true'
-    fi
-    if [[ ${{ parameters.GIT_COMMIT }} == *"alldbtests"* ]]; then
-        echo '##vso[task.setvariable variable=alldbtests]true'
-    fi
+      fi
+      if [[ $GIT_COMMIT == *"alldbtests"* ]]; then
+          echo '##vso[task.setvariable variable=alldbtests]true'
+      fi
+    env:
+      GIT_COMMIT: ${{ parameters.GIT_COMMIT }}

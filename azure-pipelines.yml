@@ -10,6 +10,8 @@ variables:
     value: '$(Build.BuildId)'
   - name: System.Debug
     value: true
+  - name: noci
+    value: toto
 
 stages :
 
@@ -85,15 +87,15 @@ stages :
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
           goals: 'test -P DBTest'
 
-      - task: AzureCLI@2
-        displayName: Azure CLI
-        inputs:
-          azureSubscription: thierry-sandox
-          addSpnToEnvironment: true
-          scriptType: bash
-          scriptLocation: inlineScript
-          inlineScript: |
-            az storage blob upload-batch -d test-az-cli -s $(System.DefaultWorkingDirectory)/target/surefire-reports/ --pattern TEST*.xml --account-name $(secure-storage-account-name)  --account-key $(secure-storage-account-key)
+      # - task: AzureCLI@2
+      #   displayName: Azure CLI
+      #   inputs:
+      #     azureSubscription: thierry-sandox
+      #     addSpnToEnvironment: true
+      #     scriptType: bash
+      #     scriptLocation: inlineScript
+      #     inlineScript: |
+      #       az storage blob upload-batch -d test-az-cli -s $(System.DefaultWorkingDirectory)/target/surefire-reports/ --pattern TEST*.xml --account-name $(secure-storage-account-name)  --account-key $(secure-storage-account-key)
       
       
       - task: PublishTestResults@2
@@ -134,6 +136,7 @@ stages :
       pool:
         vmImage: 'ubuntu-latest'
       steps:
+      - script: echo $(noci)
       - task: Maven@3
         displayName: Package
         inputs:

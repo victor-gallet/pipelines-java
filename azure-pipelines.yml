@@ -53,7 +53,7 @@ stages :
         displayName: Cache Maven local repo
       - task: Maven@3
         displayName: UnitTest
-        condition: and(not($(noci)),not(contains(variables['Build.SourceVersionMessage'], '@notests')))
+        condition: and(not(variables['noci']),not(contains(variables['Build.SourceVersionMessage'], '@notests')))
         inputs:
           mavenPomFile: 'pom.xml'
           mavenOptions: $(MAVEN_OPTS)

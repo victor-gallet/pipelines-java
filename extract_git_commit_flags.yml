@@ -5,17 +5,17 @@ parameters:
 
 steps:
 - task: Bash@3
-    inputs:
-        failOnStderr: true
-        targetType: 'inline'
-        script: |
-        echo ${{ parameters.GIT_COMMIT }}
-        if [[ ${{ parameters.GIT_COMMIT }} == *"noci"* ]]; then
-            echo '##vso[task.setvariable variable=noci]true'
-        fi
-        if [[ ${{ parameters.GIT_COMMIT }} == *"notest"* ]]; then
-            echo '##vso[task.setvariable variable=notest]true'
-        fi
-        if [[ ${{ parameters.GIT_COMMIT }} == *"alldbtests"* ]]; then
-            echo '##vso[task.setvariable variable=alldbtests]true'
-        fi
+  inputs:
+    failOnStderr: true
+    targetType: 'inline'
+    script: |
+    echo ${{ parameters.GIT_COMMIT }}
+    if [[ ${{ parameters.GIT_COMMIT }} == *"noci"* ]]; then
+        echo '##vso[task.setvariable variable=noci]true'
+    fi
+    if [[ ${{ parameters.GIT_COMMIT }} == *"notest"* ]]; then
+        echo '##vso[task.setvariable variable=notest]true'
+    fi
+    if [[ ${{ parameters.GIT_COMMIT }} == *"alldbtests"* ]]; then
+        echo '##vso[task.setvariable variable=alldbtests]true'
+    fi

@@ -62,12 +62,11 @@ stages :
           publishJUnitResults: false
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
           goals: 'test -P UnitTest'
-      - script: echo  "##vso[task.setvariable variable=testStatus]failure"
-        condition:  failed()
-      - script: echo  "##vso[task.setvariable variable=testStatus]success"
-        condition: succeeded()
-      - script: |
-          curl -X POST -H '$(GITHUB_AUTH)' -d '{"state": "$(testStatus)", "description": "UnitTest", "target_url": "", "context": "UnitTest"}' https://api.github.com/repos/victor-gallet/pipelines-java/statuses/$(Build.SourceVersion)
+      - template: github_statuses.yml
+        parameters: 
+          TASK_NAME: 'UnitTest'
+          GITHUB_AUTH: $(GITHUB_AUTH)
+          GIT_COMMIT: $(Build.SourceVersion)
       - task: Maven@3
         displayName: DBTest
         condition: or(eq(variables['runDbTest'], 'true'), and(eq(variables['noci'], 'false'), eq(variables['alldbtests'], 'true')))

@@ -14,5 +14,5 @@ steps:
   condition: failed()
 - script: echo  "##vso[task.setvariable variable=testStatus]success"
   condition: succeeded()
-- script: |
-  curl -X POST -H '${{ parameters.GITHUB_AUTH }}' -d '{"state": "$(testStatus)", "description": "${{ parameters.TASK_NAME }}", "target_url": "", "context": "${{ parameters.TASK_NAME }}"}' https://api.github.com/repos/victor-gallet/pipelines-java/statuses/${{ parameters.GIT_COMMIT }}
+# - script: |
+#   curl -X POST -H '${{ parameters.GITHUB_AUTH }}' -d '{"state": "$(testStatus)", "description": "${{ parameters.TASK_NAME }}", "target_url": "", "context": "${{ parameters.TASK_NAME }}"}' https://api.github.com/repos/victor-gallet/pipelines-java/statuses/${{ parameters.GIT_COMMIT }}

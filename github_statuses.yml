@@ -22,21 +22,24 @@ steps:
     Authorization = "Bearer ${{ parameters.ACCESS_TOKEN }}"
    } -Method Get
    Write-Host $result.records
-   $taskResult = $result.records | where {$_.name -eq '${{ parameters.TASK_NAME }}'}
-   Write-Host $taskResult.result
-  displayName: 'PowerShell Script'
+   $task = $result.records | where {$_.name -eq '${{ parameters.TASK_NAME }}'}
+   $status = $task.result
+   Write-Host $status
+   ##vso[task.setvariable variable=status;]$status
+  displayName: 'Get Task Status'
+  name: STATUS_TASK
   condition: always()
 - powershell: |
    $url = "https://api.github.com/repos/victor-gallet/pipelines-java/statuses/${{ parameters.GIT_COMMIT }}"
    $result = Invoke-RestMethod -Uri $url -Headers @{   
     Authorization = "token ${{ parameters.GITHUB_AUTH }}"
-   } -Body (@{"state"="failure";"description"="${{ parameters.TASK_NAME }}";"context"="${{ parameters.TASK_NAME }}";}|ConvertTo-Json) -Method POST
-  condition: failed()
-  displayName: Github statuses ${{ parameters.TASK_NAME }} failed
-- powershell: |
-   $url = "https://api.github.com/repos/victor-gallet/pipelines-java/statuses/${{ parameters.GIT_COMMIT }}"
-   $result = Invoke-RestMethod -Uri $url -Headers @{   
-    Authorization = "token ${{ parameters.GITHUB_AUTH }}"
-   } -Body (@{"state"="success";"description"="${{ parameters.TASK_NAME }}";"context"="${{ parameters.TASK_NAME }}";}|ConvertTo-Json) -Method POST
-  condition: succeeded()
-  displayName: Github statuses ${{ parameters.TASK_NAME }} succeeded
+   } -Body (@{"state"="$(status)";"description"="${{ parameters.TASK_NAME }}";"context"="${{ parameters.TASK_NAME }}";}|ConvertTo-Json) -Method POST
+  condition: always()
+  displayName: Github statuses
+# - powershell: |
+#    $url = "https://api.github.com/repos/victor-gallet/pipelines-java/statuses/${{ parameters.GIT_COMMIT }}"
+#    $result = Invoke-RestMethod -Uri $url -Headers @{   
+#     Authorization = "token ${{ parameters.GITHUB_AUTH }}"
+#    } -Body (@{"state"="success";"description"="${{ parameters.TASK_NAME }}";"context"="${{ parameters.TASK_NAME }}";}|ConvertTo-Json) -Method POST
+#   condition: succeeded()
+#   displayName: Github statuses ${{ parameters.TASK_NAME }} succeeded

@@ -27,7 +27,6 @@ steps:
    Write-Host "##vso[task.setvariable variable=taskStatus;isOutput=true]$taskStatus"
    Write-Host $status
   displayName: 'Get Task Status'
-  name: STATUS_TASK
   condition: always()
 - powershell: |
    $url = "https://api.github.com/repos/victor-gallet/pipelines-java/statuses/${{ parameters.GIT_COMMIT }}"

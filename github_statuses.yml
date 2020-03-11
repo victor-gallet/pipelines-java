@@ -33,7 +33,7 @@ steps:
     echo "my environment variable is $(SET_TASK_STATUS_${{ parameters.TASK_NAME }}.TASKSTATUS)"
   condition: always()
 - powershell: |
-   $githubStatus = "$(SET_TASK_STATUS_${{ parameters.TASK_NAME }}.TASKSTATUS)"
+   $github_status = "$(SET_TASK_STATUS_${{ parameters.TASK_NAME }}.TASKSTATUS)"
    if ($github_status -eq "succeeded") {
     $github_status = "success"
    } else {
@@ -42,7 +42,7 @@ steps:
    $url = "https://api.github.com/repos/victor-gallet/pipelines-java/statuses/${{ parameters.GIT_COMMIT }}"
    $result = Invoke-RestMethod -Uri $url -Headers @{   
     Authorization = "token ${{ parameters.GITHUB_AUTH }}"
-   } -Body (@{"state"="$githubStatus";"description"="${{ parameters.TASK_NAME }}";"context"="${{ parameters.TASK_NAME }}";}|ConvertTo-Json) -Method POST
+   } -Body (@{"state"="$github_status";"description"="${{ parameters.TASK_NAME }}";"context"="${{ parameters.TASK_NAME }}";}|ConvertTo-Json) -Method POST
   condition: always()
   displayName: Github statuses
 # - powershell: |

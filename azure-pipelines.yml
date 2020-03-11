@@ -36,7 +36,6 @@ stages :
     notest: false
     alldbtests: false 
     GITHUB_AUTH: '$(secure-github-token)'
-    taskStatus: 'failure'
 
   jobs:
     - job: UNIT_TEST

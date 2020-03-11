@@ -23,9 +23,11 @@ steps:
    } -Method Get
    Out-File -FilePath .\timeline.json -InputObject $result
   displayName: 'PowerShell Script'
+  condition: always()
 - script: cat timeline.json
+  condition: always()
 - script: cat timeline.json | jq -c '. .records[] | select(.name=="UnitTest") | .result'
-  condition: succeededOrFailed()
+  condition: always()
 - powershell: |
    $url = "https://api.github.com/repos/victor-gallet/pipelines-java/statuses/${{ parameters.GIT_COMMIT }}"
    $result = Invoke-RestMethod -Uri $url -Headers @{   

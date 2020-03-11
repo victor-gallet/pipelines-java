@@ -26,10 +26,11 @@ steps:
    $taskStatus = $task.result
    Write-Host "##vso[task.setvariable variable=taskStatus;isOutput=true]$taskStatus"
    Write-Host $status
-  displayName: 'Get Task Status'
+  displayName: 'Set Task Status'
   condition: always()
 - bash: |
     echo "my environment variable is $TASKSTATUS"
+  condition: always()
 - powershell: |
    $url = "https://api.github.com/repos/victor-gallet/pipelines-java/statuses/${{ parameters.GIT_COMMIT }}"
    $result = Invoke-RestMethod -Uri $url -Headers @{   

@@ -79,7 +79,11 @@ stages :
           publishJUnitResults: false
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
           goals: 'test -P DBTest'
-
+      - template: github_statuses.yml
+        parameters: 
+          TASK_NAME: 'DBTest'
+          GITHUB_AUTH: $(GITHUB_AUTH)
+          GIT_COMMIT: $(Build.SourceVersion)
       # - task: AzureCLI@2
       #   displayName: Azure CLI
       #   inputs:

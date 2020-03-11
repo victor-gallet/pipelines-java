@@ -18,15 +18,12 @@ parameters:
 steps:
 - powershell: |
    $url = " https://dev.azure.com/thierrychantier/evaluation for build/_apis/build/builds/${{ parameters.BUILDID }}/timeline?api-version=5.1"
-   $result = Invoke-RestMethod -Uri $url -Headers @{   
+   $result = Invoke-WebRequest -Uri $url -Headers @{   
     Authorization = "Bearer ${{ parameters.ACCESS_TOKEN }}"
    } -Method Get
-   Out-File -FilePath .\timeline.json -InputObject $result
+   $taskResult = $resultObject.records | where {$_.name -eq '${{ parameters.TASK_NAME }}'}
+   Write-Host $taskResult.result
   displayName: 'PowerShell Script'
-  condition: always()
-- script: cat timeline.json
-  condition: always()
-- script: cat timeline.json | jq -c '. .records[] | select(.name=="UnitTest") | .result'
   condition: always()
 - powershell: |
    $url = "https://api.github.com/repos/victor-gallet/pipelines-java/statuses/${{ parameters.GIT_COMMIT }}"

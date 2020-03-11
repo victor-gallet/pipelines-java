@@ -27,9 +27,10 @@ steps:
    Write-Host "##vso[task.setvariable variable=taskStatus;isOutput=true]$taskStatus"
    Write-Host $status
   displayName: 'Set Task Status'
+  name: SET_TASK_STATUS_${{ parameters.TASK_NAME }}
   condition: always()
 - bash: |
-    echo "my environment variable is $TASKSTATUS"
+    echo "my environment variable is $(SET_TASK_STATUS_${{ parameters.TASK_NAME }}.TASKSTATUS)"
   condition: always()
 - powershell: |
    $url = "https://api.github.com/repos/victor-gallet/pipelines-java/statuses/${{ parameters.GIT_COMMIT }}"

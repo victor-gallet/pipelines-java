@@ -33,7 +33,7 @@ steps:
     echo "my environment variable is $(SET_TASK_STATUS_${{ parameters.TASK_NAME }}.TASKSTATUS)"
   condition: always()
 - powershell: |
-   $githubStatus = $(SET_TASK_STATUS_${{ parameters.TASK_NAME }}.TASKSTATUS)
+   $githubStatus = "$(SET_TASK_STATUS_${{ parameters.TASK_NAME }}.TASKSTATUS)"
    if ($github_status -eq "succeeded") {
     $github_status = "success"
    } else {

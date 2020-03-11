@@ -47,6 +47,9 @@ stages :
       pool:
         vmImage: 'ubuntu-latest'
       steps:
+      - powershell: |
+          $log = git show -s --format=%ct
+          Write-Host $log
       - template: extract_git_commit_flags.yml
         parameters:
           GIT_COMMIT: $(Build.SourceVersionMessage)

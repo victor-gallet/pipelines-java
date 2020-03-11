@@ -39,6 +39,7 @@ stages :
 
   jobs:
     - job: UNIT_TEST
+      continueOnError: true
       displayName: UNIT_TEST
       timeoutInMinutes: 0 # 0 veut dire max value, par défaut c'est 60 minutes pour windows agent sur un git privé
       pool:
@@ -82,13 +83,14 @@ stages :
           GITHUB_AUTH: $(GITHUB_AUTH)
           GIT_COMMIT: $(Build.SourceVersion)
     - job: DB_TEST
+      condition: always()
+      continueOnError: true
       displayName: DB_TEST
       dependsOn: UNIT_TEST
       timeoutInMinutes: 0 # 0 veut dire max value, par défaut c'est 60 minutes pour windows agent sur un git privé
       pool:
         vmImage: 'ubuntu-latest'
       steps:
-      - checkout: none
       - template: extract_git_commit_flags.yml
         parameters:
           GIT_COMMIT: $(Build.SourceVersionMessage)
@@ -151,9 +153,11 @@ stages :
 
 - stage: Package
   displayName: Package stage
+  condition: always()
   
   jobs:  
     - job: Test
+      continueOnError: true
       displayName: Job Test
       pool:
         vmImage: 'ubuntu-latest'

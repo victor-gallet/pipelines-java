@@ -21,8 +21,8 @@ steps:
    $result = Invoke-RestMethod -Uri $url -Headers @{   
     Authorization = "Bearer ${{ parameters.ACCESS_TOKEN }}"
    } -Method Get
-   Write-Host $resultObject.records
-   $taskResult = $resultObject.records | where {$_.name -eq '${{ parameters.TASK_NAME }}'}
+   Write-Host $result.records
+   $taskResult = $result.records | where {$_.name -eq '${{ parameters.TASK_NAME }}'}
    Write-Host $taskResult.result
   displayName: 'PowerShell Script'
   condition: always()

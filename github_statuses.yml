@@ -11,22 +11,17 @@ parameters:
 - name: 'BUILDID'
   default: '0'
   type: string
-- name: 'ACCESS_TOKEN'
+- name: 'AUTH'
   default: '0'
   type: string
 
 steps:
-- powershell: |
-   $url = " https://dev.azure.com/thierrychantier/evaluation for build/_apis/build/builds/${{ parameters.BUILDID }}/timeline?api-version=5.1"
-   $result = Invoke-RestMethod -Uri $url -Headers @{   
-    Authorization = "Bearer ${{ parameters.ACCESS_TOKEN }}"
-   } -Method Get
-   Write-Host $result
-   $resultObject = ConvertFrom-Json –InputObject $result
-   $taskResult = $resultObject.records | where {$_.name -eq '${{ parameters.TASK_NAME }}'}
-   Write-Host $taskResult.result
-   
-  displayName: 'PowerShell Script'
+  steps:
+- script: curl -X GET -H '${{ parameters.AUTH }}' "$( echo "https://dev.azure.com/thierrychantier/evaluation for build/_apis/build/builds/${{ parameters.BUILDID }}/timeline?api-version=5.1" | sed 's/ /%20/g' )" >> output.txt
+- script: cat output.txt
+- script: |
+    $status = cat output.txt | jq -c '. .records[] | select(.name=="${{ parameters.TASK_NAME }}") | .result'
+    Write-Host $status
   condition: succeededOrFailed()
 - powershell: |
    $url = "https://api.github.com/repos/victor-gallet/pipelines-java/statuses/${{ parameters.GIT_COMMIT }}"

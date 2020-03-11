@@ -33,16 +33,13 @@ stages :
   displayName: Build stage
   variables:
     noci: false
+    notest: false
+    alldbtests: false 
+    GITHUB_AUTH: '$(secure-github-token)'
 
   jobs:
-    - job: Test
-      displayName: Job Test
-      variables:
-        GITHUB_AUTH: '$(secure-github-token)'
-        testStatus: 'failure'
-        noci: false
-        notest: false
-        alldbtests: false 
+    - job: UNIT_TEST
+      displayName: UNIT_TEST
       timeoutInMinutes: 0 # 0 veut dire max value, par défaut c'est 60 minutes pour windows agent sur un git privé
       pool:
         vmImage: 'ubuntu-latest'
@@ -67,6 +64,34 @@ stages :
           TASK_NAME: 'UnitTest'
           GITHUB_AUTH: $(GITHUB_AUTH)
           GIT_COMMIT: $(Build.SourceVersion)
+      - task: Maven@3
+        displayName: DBTest
+        condition: or(eq(variables['runDbTest'], 'true'), and(eq(variables['noci'], 'false'), eq(variables['alldbtests'], 'true')))
+        inputs:
+          mavenPomFile: 'pom.xml'
+          mavenOptions: '-Xmx3072m'
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: '1.8'
+          jdkArchitectureOption: 'x64'
+          publishJUnitResults: false
+          testResultsFiles: '**/surefire-reports/TEST-*.xml'
+          goals: 'test -P DBTest'
+      - template: github_statuses.yml
+        parameters: 
+          TASK_NAME: 'DBTest'
+          GITHUB_AUTH: $(GITHUB_AUTH)
+          GIT_COMMIT: $(Build.SourceVersion)
+    - job: DB_TEST
+      displayName: DB_TEST
+      dependsOn: UNIT_TEST
+      timeoutInMinutes: 0 # 0 veut dire max value, par défaut c'est 60 minutes pour windows agent sur un git privé
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+      - checkout: none
+      - template: extract_git_commit_flags.yml
+        parameters:
+          GIT_COMMIT: $(Build.SourceVersionMessage)
       - task: Maven@3
         displayName: DBTest
         condition: or(eq(variables['runDbTest'], 'true'), and(eq(variables['noci'], 'false'), eq(variables['alldbtests'], 'true')))

@@ -38,7 +38,7 @@ stages :
     - job: Test
       displayName: Job Test
       variables:
-        GITHUB_AUTH: 'Authorization: token $(secure-github-token)'
+        GITHUB_AUTH: '$(secure-github-token)'
         testStatus: 'failure'
         noci: false
         notest: false

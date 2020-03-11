@@ -51,6 +51,7 @@ stages :
           GIT_COMMIT: $(Build.SourceVersionMessage)
       - task: Maven@3
         displayName: UnitTest
+        name: UnitTest
         condition: and(eq(variables['noci'], 'false'), eq(variables['notest'], 'false'))
         inputs:
           mavenPomFile: 'pom.xml'
@@ -68,6 +69,26 @@ stages :
           GIT_COMMIT: $(Build.SourceVersion)
           BUILDID: $(Build.BuildId)
           ACCESS_TOKEN : "$(System.AccessToken)"
+      - task: Maven@3
+        displayName: DBTest
+        name: DBTest
+        condition: or(eq(variables['runDbTest'], 'true'), and(eq(variables['noci'], 'false'), eq(variables['alldbtests'], 'true')))
+        inputs:
+          mavenPomFile: 'pom.xml'
+          mavenOptions: '-Xmx3072m'
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: '1.8'
+          jdkArchitectureOption: 'x64'
+          publishJUnitResults: false
+          testResultsFiles: '**/surefire-reports/TEST-*.xml'
+          goals: 'test -P DBTest'
+      - template: github_statuses.yml
+        parameters: 
+          TASK_NAME: 'DBTest'
+          GITHUB_AUTH: $(GITHUB_AUTH)
+          GIT_COMMIT: $(Build.SourceVersion)
+          BUILDID: $(Build.BuildId)
+          ACCESS_TOKEN : "$(System.AccessToken)"
     # - job: DB_TEST
     #   condition: always()
     #   continueOnError: true
@@ -80,23 +101,7 @@ stages :
     #   - template: extract_git_commit_flags.yml
     #     parameters:
     #       GIT_COMMIT: $(Build.SourceVersionMessage)
-    #   - task: Maven@3
-    #     displayName: DBTest
-    #     condition: or(eq(variables['runDbTest'], 'true'), and(eq(variables['noci'], 'false'), eq(variables['alldbtests'], 'true')))
-    #     inputs:
-    #       mavenPomFile: 'pom.xml'
-    #       mavenOptions: '-Xmx3072m'
-    #       javaHomeOption: 'JDKVersion'
-    #       jdkVersionOption: '1.8'
-    #       jdkArchitectureOption: 'x64'
-    #       publishJUnitResults: false
-    #       testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    #       goals: 'test -P DBTest'
-    #   - template: github_statuses.yml
-    #     parameters: 
-    #       TASK_NAME: 'DBTest'
-    #       GITHUB_AUTH: $(GITHUB_AUTH)
-    #       GIT_COMMIT: $(Build.SourceVersion)
+    #   
       # - task: AzureCLI@2
       #   displayName: Azure CLI
       #   inputs:

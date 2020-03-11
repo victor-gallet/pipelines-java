@@ -24,7 +24,7 @@ steps:
    Write-Host $result.records
    $task = $result.records | where {$_.name -eq '${{ parameters.TASK_NAME }}'}
    $status = $task.result
-   Write-Host ##vso[task.setvariable variable=status;isOutput=true]$status
+   Write-Host "##vso[task.setvariable variable=status;isOutput=true]$status"
    Write-Host $status
   displayName: 'Get Task Status'
   name: STATUS_TASK

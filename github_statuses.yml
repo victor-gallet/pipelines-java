@@ -26,12 +26,9 @@ steps:
    $taskStatus = $task.result
    Write-Host "##vso[task.setvariable variable=taskStatus;isOutput=true]$taskStatus"
    Write-Host $status
-  displayName: 'Set Task Status'
+  displayName: 'Get Task ${{ parameters.TASK_NAME }} Status'
   name: SET_TASK_STATUS_${{ parameters.TASK_NAME }}
-  condition: always()
-- bash: |
-    echo "my environment variable is $(SET_TASK_STATUS_${{ parameters.TASK_NAME }}.TASKSTATUS)"
-  condition: always()
+  condition: succeededOrFailed()
 - powershell: |
    $github_status = "$(SET_TASK_STATUS_${{ parameters.TASK_NAME }}.TASKSTATUS)"
    if ($github_status -eq "succeeded") {
@@ -43,12 +40,5 @@ steps:
    $result = Invoke-RestMethod -Uri $url -Headers @{   
     Authorization = "token ${{ parameters.GITHUB_AUTH }}"
    } -Body (@{"state"="$github_status";"description"="${{ parameters.TASK_NAME }}";"context"="${{ parameters.TASK_NAME }}";}|ConvertTo-Json) -Method POST
-  condition: always()
-  displayName: Github statuses
-# - powershell: |
-#    $url = "https://api.github.com/repos/victor-gallet/pipelines-java/statuses/${{ parameters.GIT_COMMIT }}"
-#    $result = Invoke-RestMethod -Uri $url -Headers @{   
-#     Authorization = "token ${{ parameters.GITHUB_AUTH }}"
-#    } -Body (@{"state"="success";"description"="${{ parameters.TASK_NAME }}";"context"="${{ parameters.TASK_NAME }}";}|ConvertTo-Json) -Method POST
-#   condition: succeeded()
-#   displayName: Github statuses ${{ parameters.TASK_NAME }} succeeded
+  condition: succeededOrFailed()
+  displayName: 'Github Status ${{ parameters.TASK_NAME }}'

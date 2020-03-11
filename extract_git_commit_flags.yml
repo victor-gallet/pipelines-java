@@ -5,6 +5,8 @@ parameters:
 
 steps:
 - task: Bash@3
+  name: GIT_FLAGS
+  displayName: Extract Git Flags
   inputs:
     failOnStderr: true
     targetType: 'inline'

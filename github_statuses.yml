@@ -18,7 +18,7 @@ parameters:
 steps:
 - powershell: |
    $url = " https://dev.azure.com/thierrychantier/evaluation for build/_apis/build/builds/${{ parameters.BUILDID }}/timeline?api-version=5.1"
-   $result = Invoke-WebRequest -Uri $url -Headers @{   
+   $result = Invoke-RestMethod -Uri $url -Headers @{   
     Authorization = "Bearer ${{ parameters.ACCESS_TOKEN }}"
    } -Method Get
    $taskResult = $resultObject.records | where {$_.name -eq '${{ parameters.TASK_NAME }}'}

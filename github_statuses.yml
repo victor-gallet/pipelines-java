@@ -19,5 +19,3 @@ steps:
       targetType: filePath
       filePath: post_github_statuses.sh
       failOnStderr: true
-      script: echo
-- script: 

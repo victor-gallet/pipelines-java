@@ -132,7 +132,7 @@ stages :
             targetType: inline
             script: |
               pip install -r $(System.DefaultWorkingDirectory)/python/requirements.txt
-              python $(System.DefaultWorkingDirectory)/python/test_cowsay.py
+              python $(System.DefaultWorkingDirectory)/python/test_cowsay.py $(Build.BuildId)
               python -m pytest $(System.DefaultWorkingDirectory)/python/test_version_split.py
 - stage: Package
   displayName: Package stage
